@@ -1,4 +1,7 @@
 // -- GLOBAL VARIABLES --
+
+const MAX_CHARS = 150;
+
 const textareaEl = document.querySelector('.form__textarea');
 const counterEl = document.querySelector('.counter');
 const formEl = document.querySelector('.form');
@@ -10,11 +13,11 @@ const submitBtnEl = document.querySelector('.submit-btn');
 
 const inputHandler = () => {
     // determine max number of characters.
-    const max = 150;
+    const maxNbrChars = MAX_CHARS;
     // number of characters that user has currently typed.
     const numCharTyped = textareaEl.value.length;
     // calculate number of characters left.
-    const charsLeft = max - numCharTyped;
+    const charsLeft = maxNbrChars - numCharTyped;
     // show number of characters left.
     counterEl.textContent = charsLeft;
 };  
@@ -22,28 +25,34 @@ const inputHandler = () => {
 textareaEl.addEventListener('input', inputHandler);
 
 // -- FORM COMPONENT --
+
+
+// function to determine if form is valid or invalid and what information to display.
+const showVisualIndicator = textCheck => {
+    // Ternary operator returns valid if text includes # and at least 5 chars. Invalid if not.
+    const className = textCheck === 'valid' ? 'form--valid' : 'form--invalid';
+
+    // adds indicator depending on rules.
+ formEl.classList.add(className);
+ // Outline will be rmoved in 2 seconds whether or not outline is green or red.
+ setTimeout(() => {
+     formEl.classList.remove(className);
+     }, 2000)
+};
+
+
 const submitHandler = event => {
     // prevent default form action to send form to action address and load page.
     event.preventDefault();
     // get text from textarea
     const text = textareaEl.value;
+   
     //  validate text ( check if hashtage is present and check if text is long enought
     if (text.includes('#') && text.length >= 5) {
-        // adds green outline if # is included in text.
-        formEl.classList.add('form--valid');
-        // if # is included and submit is clicked, green outline will be rmoved in 2 seconds.
-        setTimeout(() => {
-            formEl.classList.remove('form--valid');
-            }, 2000)
-
-
+        showVisualIndicator('valid');
     } else {
-        // adds red outline if # is NOT included in text and text is not at least five characters..
-        formEl.classList.add('form--invalid');
-        setTimeout(() => {
-        // if # is NOT included and text is less than 5 and submit is clicked, red outline will be rmoved in 2 seconds.
-        formEl.classList.remove('form--invalid');
-            }, 2000)
+        showVisualIndicator('invalid');
+
         // keep focus to textarea so user can continue to type.
         textareaEl.focus();
         // stop function execution. Return will stop function here. It will not return anything.
@@ -89,9 +98,9 @@ const submitHandler = event => {
     // clear textarea
     textareaEl.value = '';
     // blue submit button 
-    submitBtnEl.blur();
     // reset counter
-    counterEl.textContent = 150;
+    submitBtnEl.blur();
+    counterEl.textContent = MAX_CHARS;
 };
 
 formEl.addEventListener('submit', submitHandler);
