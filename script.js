@@ -143,6 +143,45 @@ formEl.addEventListener('submit', submitHandler);
 
 // -- FEEDBACK LIST COMPONENT ---
 
+// clickHandler must be written first before adding event listener. Arrow function not hoisted.
+const clickHandler = event => {
+    // get target that was clicked.
+    const clickedEl = event.target;
+    
+    // determine if user intended to upvote or expand
+    const upvoteIntention = clickedEl.className.includes('upvote'); // gives either true or false
+
+    if (upvoteIntention) {
+        // get upvote button.
+        const upvoteBtnEl = clickedEl.closest('.upvote');
+        // disable upvote button if clicked.
+        upvoteBtnEl.disabled = true;
+
+        // select upvote__count element with upvote button
+        // document.querySelector will find the first one in the document. 
+        // We want to search for element in the button element so we use upvoteBtnEl instead of document.
+        const upvoteCountEl = upvoteBtnEl.querySelector('.upvote__count');
+
+        // get currently displayed upvote Count 
+        // if content is a string, add + before upvoteCountEl to convert it to number.
+        let upvoteCount = +upvoteCountEl.textContent;
+
+        // set upvoteCount and increment by one. ++ should be typed first to increment first then diplay updated value 
+        upvoteCountEl.textContent = ++upvoteCount;
+
+        console.log(upvoteCount);
+
+    } else {
+        // expand clicked feedback item
+        clickedEl.closest('.feedback').classList.toggle('feedback--expand');
+    }
+};
+
+// adds event listender to feedbackListEL (ol tag)
+feedbackListEL.addEventListener('click', clickHandler);
+
+
+
 // fetch request uses AJAX and replaces XMLHTTP or XHR ojbect request object withotu doing full page refresh
 fetch(`${BASE_API_URL}/feedbacks`)
     .then(response => {
