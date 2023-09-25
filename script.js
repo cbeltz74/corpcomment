@@ -1,13 +1,40 @@
 // -- GLOBAL VARIABLES --
 
 const MAX_CHARS = 150;
+const BASE_API_URL = 'https://bytegrad.com/course-assets/js/1/api';
 
 const textareaEl = document.querySelector('.form__textarea');
 const counterEl = document.querySelector('.counter');
 const formEl = document.querySelector('.form');
 const feedbackListEL = document.querySelector('.feedbacks');
 const submitBtnEl = document.querySelector('.submit-btn');
+const spinnerEl = document.querySelector('.spinner');
 
+
+const renderFeedback = feedback => {
+     // new feedback item HTML
+     const feedbackItemHTML = `
+     <li class="feedback">
+         <button class="upvote">
+             <i class="fa-solid fa-caret-up upvote__icon"></i>
+             <span class="upvote__count">${feedback.upvoteCount}</span>
+         </button>
+     
+         <section class="feedback__badge">
+             <p class="feedback__letter">${feedback.badgeLetter}</p>
+         </section>
+         
+         <div class="feedback__content">
+             <p class="feedback__company">${feedback.company}</p>
+             <p class="feedback__text">${feedback.text}</p>
+         </div>
+     
+         <p class="feedback__date">${ feedback.daysAgo === 0 ? 'NEW' : `${feedback.daysAgo}d` }</p>
+     </li>
+ `;
+ // insert new feedback item in list
+ feedbackListEL.insertAdjacentHTML('beforeend', feedbackItemHTML);
+};
 
 // --- COUNTER COMPONENT ---
 
@@ -71,29 +98,37 @@ const submitHandler = event => {
     const upvoteCount = 0;
     const daysAgo = 0;
 
-    // new feedback item HTML
-    const feedbackItemHTML = `
-        <li class="feedback">
-            <button class="upvote">
-                <i class="fa-solid fa-caret-up upvote__icon"></i>
-                <span class="upvote__count">${upvoteCount}</span>
-            </button>
-        
-            <section class="feedback__badge">
-                <p class="feedback__letter">${badgeLetter}</p>
-            </section>
-            
-            <div class="feedback__content">
-                <p class="feedback__company">${company}</p>
-                <p class="feedback__text">${text}</p>
-            </div>
-        
-            <p class="feedback__date">${ daysAgo === 0 ? 'NEW' : `${daysAgo}d` }</p>
-        </li>
-    `;
 
-    // insert new feedback item in list
-    feedbackListEL.insertAdjacentHTML('beforeend', feedbackItemHTML);
+
+    // render feedback item in list. (Get Request);
+    const feedback = {
+        upvoteCount: upvoteCount,
+        company: company,
+        badgeLetter: badgeLetter,
+        daysAgo: daysAgo,
+        text: text
+    }
+    renderFeedback(feedback);
+
+    // send feedback item to server (Post Request)
+    fetch(`${BASE_API_URL}/feedbacks`, {
+        method: 'POST',
+        body: JSON.stringify(feedback),
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        // this if statement is considered a guard clause
+        if(!response.ok) {
+            console.log('something went wrong');
+            return;
+        }
+        
+        console.log('Successfully submitted');
+    })
+    .catch(error => console.log(error) );
 
     // clear textarea
     textareaEl.value = '';
@@ -104,3 +139,24 @@ const submitHandler = event => {
 };
 
 formEl.addEventListener('submit', submitHandler);
+
+
+// -- FEEDBACK LIST COMPONENT ---
+
+// fetch request uses AJAX and replaces XMLHTTP or XHR ojbect request object withotu doing full page refresh
+fetch(`${BASE_API_URL}/feedbacks`)
+    .then(response => {
+        // this waits for all the data of the response to be parsed in json format
+        return response.json();
+    })
+    // this returns data in form of javascript object in manner we can work with
+    .then(data => { 
+        // remove spinner
+        spinnerEl.remove();
+        // forEach goes through each feedback in data.feedbacks and displays information in array.
+        data.feedbacks.forEach((feedback) => { renderFeedback(feedback) });
+    })
+    .catch(error => {
+        feedbackListEL.textContent = `Failed to fetch feedback items. Error message: ${error.message}`;
+    });
+
