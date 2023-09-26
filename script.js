@@ -182,8 +182,6 @@ const renderFeedback = feedback => {
     // adds event listender to feedbackListEL (ol tag)
     feedbackListEL.addEventListener('click', clickHandler);
 
-
-
     // fetch request uses AJAX and replaces XMLHTTP or XHR ojbect request object withotu doing full page refresh
     fetch(`${BASE_API_URL}/feedbacks`)
         .then(response => {
